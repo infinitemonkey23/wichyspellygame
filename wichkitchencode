@@ -1,0 +1,73 @@
+class Witchkitchen:
+    """
+    this is the class for all potential moves for the codingame autumn challenge.
+    """
+    
+    
+    def __init__(self):
+        """
+        this will initialise the class
+        """
+        
+        self.brewlist=[]
+        self.spelllist=[]
+        self.inventory=[]
+        self.op_inventory=[]
+        
+        
+    def add_brew(self,action_id,d_0,d_1,d_2,d_3,price,urgence_b,ugency_t):
+        """
+        this will add any potion recipies to the class at the start of each turn
+        """
+        self.brewlist.append([action_id,d_0,d_1,d_2,d_3,price,urgence_b,ugency_t,castable])
+      
+    
+    def add_cast(self,action_id,d_0,d_1,d_2,d_3,castable,repeatable):
+        """
+        this will add any spells to the class at the start of each turn
+        """
+    
+        self.spelllist.append([action_id,d_0,d_1,d_2,d_3,castable,repeatable])
+        
+        
+    def turn_input(self,action_id, action_type,d_0,d_1,d_2,d_3,price,tome_index,tax_count ,castable,repeatable):
+        """
+        sorts the turns data into the approtriate list
+        """
+        
+        if action_type=="BREW":
+            add_brew(action_id,d_0,d_1,d_2,d_3,price,tome_index,tax_count ,castable)
+        elif action_type=="CAST":
+            add_cast(action_id,d_0,d_1,d_2,d_3,castable,repeatable)
+        elif action_type=="LEARN":
+            add_learn(action_id,d_0,d_1,d_2,d_3,tome_index,tax_count)
+            
+            
+            
+        
+    def intentory_input(self,inv_0, inv_1, inv_2, inv_3, score, player):
+        """
+        Creates inventories for human player and CPU player
+        """
+        if player==0:
+            self.inventory=[inv_0, inv_1, inv_2, inv_3, score]
+        elif player==1:
+            self.op_inventory=[inv_0, inv_1, inv_2, inv_3, score]
+        
+            
+    def check_potion(self,player,potion):
+        """
+        will work out if sufficient iteams in inventory for the potion to be made
+        """
+        if player==1:
+            in_play_invent=self.inventory[:-1]
+            
+    def potion_distance(self, player, potion):
+        """
+        calculates the number of basic steps required to afford the potion
+        """
+        if player==1:
+            in_play_invent=self.inventory[:-1]
+            
+            
+        
