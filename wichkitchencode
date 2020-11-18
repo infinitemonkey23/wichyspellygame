@@ -8,20 +8,45 @@ class Witchkitchen:
         """
         this will initialise the class lists
         """
-        
-        self.turnbrewlist=[]
-        self.turnspelllist=[]
-        self.turninventory=[]
+        self.inventory=[]
         self.cpturn_inventory=[]
         
         self.spelllist=[]
-        self.spellinventory=[]
+        self.brewlist=[]
+
+        self.futurepaths=[]
+        self.nextfuturepaths=[]
+    
+    def errorchecker(self, iteam):
         
+        if iteam=="potions":
+            print(self.brewlist)
+        elif iteam=="spells":
+            print(self.spelllist)
+        elif iteam=="inventory":
+            print(self.inventory)
+        elif iteam=="states":
+            print(self.futurepaths)
+        elif iteam=="scores":
+            print(self.weighted_scores)
+            
+    
+    def reset (self):
+
+        self.inventory=[]
+        self.cpturn_inventory=[]
+        
+        self.spelllist=[]
+        self.brewlist=[]
+        self.futurepaths=[]
+        self.nextfuturepaths=[]
+    
+    
     def add_brew(self,action_id,d_0,d_1,d_2,d_3,price,urgence_b,ugency_t):
         """
         this will add any potion recipies to the class at the start of each turn
         """
-        self.turnbrewlist.append((action_id,d_0,d_1,d_2,d_3,price,urgence_b,ugency_t,castable)
+        self.brewlist.append((action_id,d_0,d_1,d_2,d_3,price,urgence_b,ugency_t))
       
     
     def add_cast(self,action_id,d_0,d_1,d_2,d_3,castable,repeatable):
@@ -29,8 +54,8 @@ class Witchkitchen:
         this will add any spells to the class at the start of each turn
         """
     
-        self.turnspelllist.append((action_id,d_0,d_1,d_2,d_3,castable,repeatable))
-                                 
+        self.spelllist.append((action_id,d_0,d_1,d_2,d_3,castable,repeatable))
+                         
                                  
     def add_learn(self,action_id,d_0,d_1,d_2,d_3,tome_index,tax_count):
         """
@@ -44,13 +69,11 @@ class Witchkitchen:
         """
         
         if action_type=="BREW":
-            add_brew(action_id,d_0,d_1,d_2,d_3,price,tome_index,tax_count ,castable)
+            self.add_brew(action_id,d_0,d_1,d_2,d_3,price,tome_index,tax_count)
         elif action_type=="CAST":
-            add_cast(action_id,d_0,d_1,d_2,d_3,castable,repeatable)
+            self.add_cast(action_id,d_0,d_1,d_2,d_3,castable,repeatable)
         elif action_type=="LEARN":
-            add_learn(action_id,d_0,d_1,d_2,d_3,tome_index,tax_count)
-            
-            
+            self.add_learn(action_id,d_0,d_1,d_2,d_3,tome_index,tax_count)
             
         
     def intentory_input(self,inv_0, inv_1, inv_2, inv_3, score, player):
@@ -58,112 +81,247 @@ class Witchkitchen:
         Creates inventories for human player and CPU player
         """
         if player==0:
-            self.turninventory=(inv_0, inv_1, inv_2, inv_3, score)
+            self.inventory=(inv_0, inv_1, inv_2, inv_3, 0)
         elif player==1:
-            self.cpturn_inventory=(inv_0, inv_1, inv_2, inv_3, score)
+            self.cp_inventory=(inv_0, inv_1, inv_2, inv_3, 0)
     
-        
-        
             
-    def player_check_potion(self,potion):
-        """
-        will work out if sufficient iteams in inventory for the potion to be made
+    def player_check_potion(self,potion, state):
+        """    will work out if sufficient iteams in inventory for the potion to be made
         """
         
-        if self.inventory[0]>=potion[0] and self.inventory[1]>=potion[1] and self.inventory[2]>=potion[2] and self.inventory[3]>=potion[3]:
+        inventory=state[0]                     
+        if inventory[0]+potion[1]>=0 and inventory[1]+potion[2]>=0 and inventory[2]+potion[3]>=0 and inventory[3]+potion[4]>=0:
             ### returns true if player can do the potion
             return True
         else:
             return False
     
-    def comp_check_potion(self,potion):
+    def comp_check_potion(self,potion,state):
         """
         will work out if sufficient iteams in inventory for the potion to be made
         """
-        
-        if self.cp_inventory[0]>=potion[0] and self.cp_inventory[1]>=potion[1] and self.cp_inventory[2]>=potion[2] and self.cp_inventory[3]>=potion[3]:
+   #     inventory=state[.....]
+        if inventory[0]+potion[1]>=0 and inventory[1]+potion[2]>=0 and inventory[2]+potion[3]>=0 and inventory[3]+potion[4]>=0:
             ### returns true if computer can do the potion.
             return True
         else:
             return False
         
-                                 
-    def spellinventory_update(self, potion):
-       """
-       update the self.inventory figures
-       """ 
-        new_inventory=(potion[0]+self.inventory[0],potion[1]+self.inventory[1],potion[2]+self.inventory[2],potion[3]+self.inventory[3],potion[4]+self.inventory[4])
-        self.inventory=new_inventory
+    def player_check_spell(self,state):
+        """
+        will work out if sufficient iteams in inventory for the spell  to be cast
+        """
+        
+        inventory=state[0]                     
+        if inventory[0]>0 and inventory[1]>=0 and inventory[2]>=0 and inventory[3]>=0:
+            ### returns true if player can do the potion
+            return True
+        else:
+            return False
+                             
+    def spellinventory_update(self, spell, state):
+        """
+        update the inventory figures
+        """ 
+        inventory=state[0]                     
+        new_inventory=(min(spell[1]+inventory[0],9),min(9,spell[2]+inventory[1]),min(9,spell[3]+inventory[2]),min(9,spell[4]+inventory[3]),inventory[4])
+        
+        return (new_inventory,state[1],state[2],state[3])
         
                                  
-    def brewinventory_update(self, brew):
-       """
-       update the self.inventory figures
-       """ 
-        new_inventory=(brew[0]+self.inventory[0],brew[1]+self.inventory[1],brew[2]+self.inventory[2],brew[3]+self.inventory[3],brew[4]+self.inventory[4])
-        self.inventory=new_inventory  
+    def brewinventory_update(self, brew ,state):
+        """
+        update the inventory figures after potion making
+        """ 
+        inventory=state[0]
+        new_inventory=(brew[1]+inventory[0],brew[2]+inventory[1],brew[3]+inventory[2],brew[4]+inventory[3],brew[5]+inventory[4])
+        return (new_inventory,state[1],state[2],state[3])  
                                  
               
                                  
-    def spell_remove(self,potion):
+    def spell_remove(self,potion,state):
         """
         method to update spelllist with castable to 0 when used
         """
-                                 
+        spelllist=list(state[1])   #list function copies the state[1] to make alteration specific                      
         if potion[-1]==0:
-            p_index=self.spelllist.index(potion)
-            self.spelllist[p_index]=(self.spelllist[p_index][:-2],0,0)
-                                 
+            p_index=spelllist.index(potion)
+    
+            spelllist[p_index]=tuple(list(spelllist[p_index][:-2])+[0,0])
+ 
+        return (state[0],spelllist,state[2],state[3])
+                  
+    
+    
+    def simu_wait(self, state):
+        
+        refreshed=[]
+        
+        for spell in state[1]:
+            newly_castable=list(spell[:-2])+[1]+[spell[-1]]
+            refreshed.append(newly_castable)
+        firstmove=state[3]    
+        if firstmove==[]:
+            firstmove=["REST"]
             
+        return (state[0],refreshed,state[2],firstmove)
+                
+        
+        
+    def future_states(self):
+                   
+        state=(list(self.inventory),list(self.spelllist),list(self.brewlist),[])                         
+        self.futurepaths.append(state)
+    
+                             
+    def add_future_states(self,state):
+        
+        self.nextfuturepaths.append(state)   
+                             
+    
+    def swap_state(self):
+                             
+        self.futurepaths=self.nextfuturepaths
+        self.nextfuturepaths=[]
+    
+    
+    def cycle_states (self,state):
+        
+        
+        output=[]                 
+        no_viable_potion=1
+        
+        #first off run through the potion I could brew and see if I can, defintly do this if poss.
+        if len(state[2])>0:
+            for potion in state[2]:
+                if self.player_check_potion(potion,state)==True:
+                    
+                    state2=self.brewinventory_update(potion,state)
+       
+                    no_viable_potion=0
+                    if state2[3]==[]:
+                        output.append((state2[0],state2[1],state2[2],[potion[0]]))
+       
+                    else:
+                        output.append(state2)
+      
+                        
+        if len(state[1])>0 and no_viable_potion==1:                          
+            for spell in state[1]:
+                state2=self.spellinventory_update(spell,state)
+ 
+                if self.player_check_spell(state2)==True:
+                    if state2[3]==[]:
+                        state3=self.spell_remove(spell,(state2[0],state2[1],state2[2],[spell[0]])) 
+                    else:
+                        state3=self.spell_remove(spell,state2)
+                    if state3 not in output:
+                        output.append(state3)
+                    
+        if no_viable_potion==1:
+            output.append(self.simu_wait(state))  #lastly the possibility of waiting
+        return output
+
                                  
-    def potion_distance(self, player, potion):
+    def potion_distance(self, player, potion, state):
         """
         calculates the number of basic steps required to afford the potion, using simple 1-1 conversion 
         as a analog to distance from potion
         """ 
         if player==0:            
-            in_play_invent=self.inventory[:-1]
+            in_play_invent=list(state[0][:-1])
             
         if player==1:
-            in_play_invent=self.cp_inventory[:-1]
+            in_play_invent=list(state[4][:-1])
             
-        zpotion=self.brew[:-3]
-        c=0
+        zpotion=potion[:-3]
+        count=0
                                  
-        for i,j in enumerate(zpotion[::-1]):
+        for i,j in enumerate(zpotion[-2:0:-1]):
             if i<3:
                 i=i+1
                 while j>in_play_invent[-i]:
                     in_play_invent[-i]+=1
                     in_play_invent[-(i+1)]-=1
-                    c+=1
+                    count+=1
 
         while zpotion[0]>in_play_invent[0]:
             in_play_invent[0]+=2
-            c+=1
-        return c
+            count+=1
+        return count
     
-    def Stimulate_go (self):
+                             
+    def Simulate_go(self):
         """
         code to simulate all potential combinations of 3 potions
         """
-                                 
-        for index,potion in self.turnspelllist:
-            self.spelllist=self.turnspelllist   "create class assets of the saved actaul turn properties"
-            self.inventory=self.turninventory 
-            if self.player_check_potion(potion)==True:
-                self.spellinventory_update(potion)
-                                 
-                self.spell_remove(potion)
-                
-                if self.player_check_potion==True:
-                                 
-                                 
-                inventory_copy=self.inventory
-                spelllist_copy=self.spelllist
-                ###so I need to check for potions and then make a list including brew potion and cast spells- maybe new method
-                              ##   to brew
-                
+                   
+        self.future_states()
+        for i in range(4):
             
+            for game_state in self.futurepaths:
+                for i in self.cycle_states(game_state):
+                    self.add_future_states(i)
+            self.swap_state()
         
+    def state_assessor(self):
+        
+        
+        self.weighted_scores=[]
+        
+        for out_comes in self.futurepaths:
+            countlist=[]
+            score=out_comes[0][4]*2
             
+            for potions in out_comes[2]:
+                countlist+=[[self.potion_distance(0,potions,out_comes),potions[5]]]
+  
+            countlist.sort()
+            
+            score-=countlist[0][1]*0.8
+            score-=countlist[1][1]*0.3
+            
+            self.weighted_scores.append([score,out_comes[3]])
+            
+        ###   
+        ###   here I shall probably include a posotive for waiting and reloading spells
+        ###
+        
+        self.weighted_scores.sort(key=lambda x:x[0],reverse=True)
+        print(self.weighted_scores)
+        if self.weighted_scores[0][0]==self.weighted_scores[1][0]:
+            tie_no=1
+            target=self.weighted_scores[0][0]
+            while target==self.weighted_scores[tie_no][0]:
+                tie_no+=1
+                if tie_no==len(self.weighted_scores):
+                    break
+            occur=[]            
+            self.weighted_scores=self.weighted_scores[:tie_no]
+            for i in self.weighted_scores:
+                if i!="REST":
+                    occur+=i[1]
+            res = max(set(occur), key = occur.count)
+            self.weighted_scores=[[res]]
+            print(self.weighted_scores)
+            
+    def move_selector(self):
+        
+        use_id=self.weighted_scores[0]
+        if use_id=="REST":
+            print(use_id)
+        
+        else:
+            task=""
+            for brew in self.brewlist:
+                if brew[0]==use_id:
+                    task="BREW"
+                    break
+            if task=="":
+                for cast in self.spelllist:
+                    if cast[0]==use_id:
+                        task="CAST"
+                        break
+            
+            print(task,use_id)
